@@ -16,11 +16,25 @@ class ImportExcelController extends Controller
 
     public function store(Request $request)
     {
+        $max_filesize = (int)ini_get('upload_max_filesize')*1024;
+        $validator = \Validator::make($request->file(), [
+            'file' => "required|max:$max_filesize|mimes:xlsx"
+        ]);
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $file = request()->file('file')->store('import');
+
         $import = new ProductsImport();
-        $import->import(request()->file('file'));
+        $import->import($file);
 
-        dd([$import->failures(),$import->errors()]);
-
-        return back();
+        return back()->with([
+            'status' => "{$import->count} products imported",
+            'errors' => $import->errors()->toArray(),
+            'failures' => $import->failures()
+        ]);
     }
 }

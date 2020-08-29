@@ -23,6 +23,47 @@
                     <br>
                     <button class="btn btn-success">Import Data</button>
                 </form>
+
+                @if(session('status'))
+                    <div class="alert alert-success alert-block">
+                        <strong>{{ session('status') }}</strong>
+                    </div>
+                @endif
+
+                @if(isset($errors) && $errors->any())
+                    <div class="alert alert-danger">
+                        Upload Error<br><br>
+                        <ul>
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if(session('failures'))
+                    <table class="table table-warning">
+                        <tr>
+                            <th>Row</th>
+                            <th>Errors</th>
+                            <th>Value</th>
+                        </tr>
+                        @foreach(session('failures') as $failure)
+                        <tr>
+                            <td>{{$failure->row()}}</td>
+                            <td>
+                                <ul>
+                                    @foreach($failure->errors() as $error)
+                                    <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                            <td>{{$failure->values()[$failure->attribute()]}}</td>
+                        </tr>
+                        @endforeach
+                    </table>
+                @endif
+
             </div>
         </div>
     </div>

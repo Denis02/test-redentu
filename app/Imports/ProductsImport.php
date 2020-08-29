@@ -26,6 +26,8 @@ class ProductsImport implements
 {
     use Importable, SkipsFailures, SkipsErrors;
 
+    public $count = 0;
+
     public function model(array $row)
     {
         $category = Category::where('title', $row['kategoriya_tovara'])->first();
@@ -49,7 +51,7 @@ class ProductsImport implements
 
         //$category->products()->save($product);
         $product->category_id = $category->id;
-
+        ++$this->count;
         return $product;
     }
 
@@ -60,7 +62,7 @@ class ProductsImport implements
             '*.rubrika' => 'required',
             '*.proizvoditel' => 'required',
             '*.naimenovanie_tovara' => 'required',
-            '*.kod_modeli_artikul_proizvoditelya' => 'required|alpha_num|size:10|unique:products,code',
+            '*.kod_modeli_artikul_proizvoditelya' => 'required|alpha_num|max:20|min:5|unique:products,code',
             '*.opisanie_tovara' => 'required',
             '*.tsena_rozn_grn' => 'required|integer',
             '*.garantiya' => 'required|max:3',
