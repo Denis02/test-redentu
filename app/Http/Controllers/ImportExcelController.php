@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\UploadMaxFilesize;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 use App\Imports\ProductsImport;
 
@@ -16,24 +16,26 @@ class ImportExcelController extends Controller
 
     public function store(Request $request)
     {
-        $max_filesize = (int)ini_get('upload_max_filesize')*1024;
         $validator = \Validator::make($request->file(), [
-            'file' => "required|max:$max_filesize|mimes:xlsx"
+            'file' => ['required', 'mimes:xlsx,xls,csv', new UploadMaxFilesize]
         ]);
         if ($validator->fails()) {
             return back()
-                ->withErrors($validator)
-                ->withInput();
+                ->withErrors($validator);
         }
 
-        $file = request()->file('file')->store('import');
+        $file = request()->file('file');
+        ini_set('max_execution_time', 600);
 
         $import = new ProductsImport();
         $import->import($file);
 
+        if($import->errors()->count()){
+            return back()->withErrors($import->errors());
+        }
+
         return back()->with([
-            'status' => "{$import->count} products imported",
-            'errors' => $import->errors()->toArray(),
+            'status' => "{$import->count} products imported!",
             'failures' => $import->failures()
         ]);
     }
